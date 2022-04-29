@@ -28,23 +28,37 @@ def getHHMMSS(seconds):
 
     return timestr
 
-x = open("data/exported_view 20220427", "rb")
+# x = open("data/exported_view all 20220427", "rb")   # all data till 27/04/2022
+# x = open("data/exported_view 20210804", "rb")   # data from 04/08/2021
+# x = open("data/exported_view 20220430", "rb")   # data from 30/04/2022
+x = open("data/exported_view 20220101", "rb")   # data from 01/01/2022
+# x = open("data/exported_view 20210514", "rb") # data from 14/5/2021
+
+# struct DATABASE {
+# 	int version (== 13, as of June 9 2019, format may be different if other version)
+# 	int magic (== 'PTFF' on x86)
+# 	int numtags
 (version, magic, numtags) = unpack("iii", x.read(12))
 print(version, magic, numtags)
 
+# 	struct { char name[32]; int color; } tags[numtags]
 for i in range(numtags):
     (name, color) = unpack("<32si", x.read(36))
     print(name, color)
 
+# 	int minfilter
+# 	int foldlevel
 (minfilter, foldlevel) = unpack("ii", x.read(8))
 print(minfilter, foldlevel)
 
+# 	int prefs[10] (see advanced prefs window, also see "prefs" in procrastitracker.cpp)
 perfs = unpack("10i", x.read(40))
 print(perfs)
 
+# 	NODE root
 def getNode():
 
-# timestruct NODE {
+    # timestruct NODE {
     name = b''    # 	char *name (null terminated bytes
     lastchar = x.read(1)
     name += lastchar
@@ -55,24 +69,25 @@ def getNode():
     tagindex = readBytes("i")    # 	int tagindex
     ishidden = readBytes("c")    # 	char ishidden
     numberofdays = readBytes("i")    # 	int numberofdays
-    # print(tagindex, ishidden, numberofdays)
+    print(tagindex, ishidden, numberofdays)
 
     for i in range(numberofdays):    # 	DAY days[numberofdays]
 
-    # timestruct DAY {
+        # timestruct DAY {
         (day,   # 	unsigned short day
                 #   (lower 5 bits = day, next 4 bits = month, rest = year counted from 2000)
         firstminuteused,    # 	unsigned short firstminuteused (counted from midnight)
         # 	int activeseconds, semiidleseconds, key, lmb, rmb, scrollwheel
         activeseconds, semiidleseconds, key, lmb, rmb, scrollwheel
         ) = readBytes("HHiiiiii")
-        # print(day, firstminuteused, activeseconds, semiidleseconds, key, lmb, rmb, scrollwheel)
+        print(day, firstminuteused, activeseconds, semiidleseconds, key, lmb, rmb, scrollwheel)
         print(getHHMMSS(activeseconds))
-    # }
+        # }
 
     numchildren = readBytes("i")    # 	int numchildren
     for i in range(numchildren):    # 	NODE children[numchildren]
         getNode()
+    # }
 # }
 
 getNode()
