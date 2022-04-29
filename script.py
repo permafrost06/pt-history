@@ -28,6 +28,13 @@ def getHHMMSS(seconds):
 
     return timestr
 
+def dayToDate(day_int):
+    bin = pack(">H", day_int)
+    hexstr = bin.hex()
+    binarystr = format(int(hexstr, 16), "16b")
+    datestr = f"{int(binarystr[-5:], 2)}/{int(binarystr[-9:-5], 2)}/20{int(binarystr[0:-9], 2)}"
+    return datestr
+
 # x = open("data/exported_view all 20220427", "rb")   # all data till 27/04/2022
 # x = open("data/exported_view 20210804", "rb")   # data from 04/08/2021
 # x = open("data/exported_view 20220430", "rb")   # data from 30/04/2022
@@ -81,6 +88,7 @@ def getNode():
         activeseconds, semiidleseconds, key, lmb, rmb, scrollwheel
         ) = readBytes("HHiiiiii")
         print(day, firstminuteused, activeseconds, semiidleseconds, key, lmb, rmb, scrollwheel)
+        print(dayToDate(day))
         print(getHHMMSS(activeseconds))
         # }
 
