@@ -1,6 +1,7 @@
 from struct import *
 from math import floor
 from typing import BinaryIO
+from datetime import date, timedelta
 
 def readBytes(formatstr: str, fp: BinaryIO):
     return unpack(formatstr, fp.read(calcsize(formatstr)))
@@ -23,9 +24,24 @@ class Day:
         self.key, self.lmb, self.rmb, self.scrollwheel
         ) = readBytes("HHiiiiii", fp)
 
+        self.date = self.__dayToDate(self.day)
+        self.activetime = self.__secondsToTimeDelta(self.activeseconds)
+
     def __repr__(self) -> str:
         return f"<Day object {self.day}>"
     
+    def __dayToDate(self, day_int: int):
+        bin = pack(">H", day_int)
+        hexstr = bin.hex()
+        binarystr = format(int(hexstr, 16), "16b")
+        day = int(binarystr[-5:], 2)
+        month = int(binarystr[-9:-5], 2)
+        year = 2000 + int(binarystr[0:-9], 2)
+        return date(year, month, day)
+
+    def __secondsToTimeDelta(self, seconds: int):
+        return timedelta(seconds=seconds)
+
 class Node:
     def __init__(self):
         self.name: str = ""
