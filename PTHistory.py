@@ -69,6 +69,8 @@ class Node:
 
         self.children: list['Node'] = []
 
+        self.totalseconds: int = 0
+
     def __repr__(self) -> str:
         return f"<Node object '{self.name}'>"
 
@@ -90,13 +92,16 @@ class Node:
         (self.numberofdays,) = readBytes("i", fp)
 
         for i in range(self.numberofdays):
-            self.days.append(Day(fp))
-        
+            day = Day(fp)
+            self.totalseconds += day.activeseconds
+            self.days.append(day)
+
         (self.numchildren,) = readBytes("i", fp)
 
         for i in range(self.numchildren):
             childNode = Node()
             childNode.parseNode(fp)
+            self.totalseconds += childNode.totalseconds
             self.children.append(childNode)
 
     def toDict(self):
@@ -106,8 +111,10 @@ class Node:
             # "ishidden": self.ishidden,
             "numberofdays": self.numberofdays,
             "days": [day.toDict() for day in self.days],
+            "totalseconds": self.totalseconds,
+            "totaltime": str(timedelta(seconds=self.totalseconds)),
             "numchildren": self.numchildren,
-            "children": [child.toDict() for child in self.children]
+            "children": [child.toDict() for child in sorted(self.children, key=lambda x: x.totalseconds, reverse=True)]
         }
 
 class PTHistory:
