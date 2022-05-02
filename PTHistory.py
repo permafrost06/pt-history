@@ -1,7 +1,12 @@
 from struct import *
 from math import floor
 from typing import BinaryIO
-from datetime import date, timedelta
+from datetime import date
+
+def secondsToTimestring(seconds: int):
+    mm, ss = divmod(seconds, 60)
+    hh, mm = divmod(mm, 60)
+    return "%d:%02d:%02d" % (hh, mm, ss)
 
 def readBytes(formatstr: str, fp: BinaryIO):
     return unpack(formatstr, fp.read(calcsize(formatstr)))
@@ -25,7 +30,7 @@ class Day:
         ) = readBytes("HHiiiiii", fp)
 
         self.date = self.__dayToDate(self.day)
-        self.activetime = self.__secondsToTimeDelta(self.activeseconds)
+        self.activetime = secondsToTimestring(self.activeseconds)
 
     def __repr__(self) -> str:
         return f"<Day object {self.day}>"
@@ -38,9 +43,6 @@ class Day:
         month = int(binarystr[-9:-5], 2)
         year = 2000 + int(binarystr[0:-9], 2)
         return date(year, month, day)
-
-    def __secondsToTimeDelta(self, seconds: int):
-        return timedelta(seconds=seconds)
 
     def toDict(self):
         return {
@@ -112,7 +114,7 @@ class Node:
             "numberofdays": self.numberofdays,
             "days": [day.toDict() for day in self.days],
             "totalseconds": self.totalseconds,
-            "totaltime": str(timedelta(seconds=self.totalseconds)),
+            "totaltime": secondsToTimestring(self.totalseconds),
             "numchildren": self.numchildren,
             "children": [child.toDict() for child in sorted(self.children, key=lambda x: x.totalseconds, reverse=True)]
         }
