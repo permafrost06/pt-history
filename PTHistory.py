@@ -42,6 +42,20 @@ class Day:
     def __secondsToTimeDelta(self, seconds: int):
         return timedelta(seconds=seconds)
 
+    def toDict(self):
+        return {
+            "day": self.day,
+            "date": str(self.date),
+            "firstminuteused": self.firstminuteused,
+            "activeseconds": self.activeseconds,
+            "activetime": str(self.activetime),
+            "semiidleseconds": self.semiidleseconds,
+            "key": self.key,
+            "lmb": self.lmb,
+            "rmb": self.rmb,
+            "scrollwheel": self.scrollwheel
+        }
+
 class Node:
     def __init__(self):
         self.name: str = ""
@@ -60,16 +74,16 @@ class Node:
 
     def __readName(self, fp: BinaryIO) -> str:
             name = b''    # 	char *name (null terminated bytes
-            # do
+            # do:
             lastchar = fp.read(1)
             name += lastchar
             while lastchar != b'\x00':
                 lastchar = fp.read(1)
                 name += lastchar
             
-            return name
+            return name.rstrip(b'\0').decode()
 
-    def createRoot(self, fp: BinaryIO):
+    def parseNode(self, fp: BinaryIO):
         self.name = self.__readName(fp)
         (self.tagindex,) = readBytes("i", fp)
         (self.ishidden,) = readBytes("c", fp)
@@ -82,28 +96,19 @@ class Node:
 
         for i in range(self.numchildren):
             childNode = Node()
-            childNode.getChild(fp)
+            childNode.parseNode(fp)
             self.children.append(childNode)
 
-    def getChild(self, fp: BinaryIO):
-        name = self.__readName(fp)
-        name = name.rstrip(b'\0')
-        name = name.decode()
-        self.name = name
-
-        (self.tagindex,) = readBytes("i", fp)
-        (self.ishidden,) = readBytes("c", fp)
-        (self.numberofdays,) = readBytes("i", fp)
-
-        for i in range(self.numberofdays):
-            self.days.append(Day(fp))
-        
-        (self.numchildren,) = readBytes("i", fp)
-
-        for i in range(self.numchildren):
-            childNode = Node()
-            childNode.getChild(fp)
-            self.children.append(childNode)
+    def toDict(self):
+        return {
+            "name": self.name,
+            "tagindex": self.tagindex,
+            # "ishidden": self.ishidden,
+            "numberofdays": self.numberofdays,
+            "days": [day.toDict() for day in self.days],
+            "numchildren": self.numchildren,
+            "children": [child.toDict() for child in self.children]
+        }
 
 class PTHistory:
     def __init__(self):
@@ -141,4 +146,16 @@ class PTHistory:
 
         self.perfs = list(readBytes("10i", fp))
 
-        self.root.createRoot(fp)
+        self.root.parseNode(fp)
+
+    def toDict(self):
+        return {
+            "version": self.version,
+            # "magic": self.magic,
+            "numtags": self.numtags,
+            # "tags": self.tags,
+            "minfilter": self.minfilter,
+            "foldlevel": self.foldlevel,
+            "perfs": self.perfs,
+            "root": self.root.toDict()
+        }
