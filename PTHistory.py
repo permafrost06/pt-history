@@ -22,6 +22,9 @@ class Tag:
     def __str__(self) -> str:
         return f"Tag: {self.name} - {self.color}"
 
+    def __iter__(self):
+        yield self.name, self.color
+
 class Day:
     def __init__(self, fp: BinaryIO):
         (self.day, self.firstminuteused,
@@ -44,19 +47,17 @@ class Day:
         year = 2000 + int(binarystr[0:-9], 2)
         return date(year, month, day)
 
-    def toDict(self):
-        return {
-            "day": self.day,
-            "date": str(self.date),
-            "firstminuteused": self.firstminuteused,
-            "activeseconds": self.activeseconds,
-            "activetime": str(self.activetime),
-            "semiidleseconds": self.semiidleseconds,
-            "key": self.key,
-            "lmb": self.lmb,
-            "rmb": self.rmb,
-            "scrollwheel": self.scrollwheel
-        }
+    def __iter__(self):
+        yield "day", self.day
+        yield "date", str(self.date)
+        yield "firstminuteused", self.firstminuteused
+        yield "activeseconds", self.activeseconds
+        yield "activetime", self.activetime
+        yield "semiidleseconds", self.semiidleseconds
+        yield "key", self.key
+        yield "lmb", self.lmb
+        yield "rmb", self.rmb
+        yield "scrollwheel", self.scrollwheel
 
 class Node:
     def __init__(self):
@@ -107,18 +108,17 @@ class Node:
             self.totalseconds += childNode.totalseconds
             self.children.append(childNode)
 
-    def toDict(self):
-        return {
-            "name": self.name,
-            "tagindex": self.tagindex,
-            # "ishidden": self.ishidden,
-            "numberofdays": self.numberofdays,
-            "days": [day.toDict() for day in self.days],
-            "totalseconds": self.totalseconds,
-            "totaltime": secondsToTimestring(self.totalseconds),
-            "numchildren": self.numchildren,
-            "children": [child.toDict() for child in sorted(self.children, key=lambda x: x.totalseconds, reverse=True)]
-        }
+    def __iter__(self):
+        yield "name", self.name
+        yield "tagindex", self.tagindex
+        yield "ishidden", self.ishidden
+        yield "numberofdays", self.numberofdays
+        yield "days", [dict(day) for day in self.days]
+        yield "totalseconds", self.totalseconds
+        yield "totaltime", secondsToTimestring(self.totalseconds)
+        yield "numchildren", self.numchildren
+        yield "children", [dict(child) for child in sorted(self.children, key=lambda x: x.totalseconds, reverse=True)]
+
 
 class PTHistory:
     def __init__(self):
@@ -158,14 +158,12 @@ class PTHistory:
 
         self.root.parseNode(fp)
 
-    def toDict(self):
-        return {
-            "version": self.version,
-            "magic": self.magic.decode(),
-            "numtags": self.numtags,
-            # "tags": self.tags,
-            "minfilter": self.minfilter,
-            "foldlevel": self.foldlevel,
-            "perfs": self.perfs,
-            "root": self.root.toDict()
-        }
+    def __iter__(self):
+        yield "version", self.version
+        yield "magic", self.magic.decode()
+        yield "numtags", self.numtags
+        yield "tags", [dict(tag) for tag in self.tags]
+        yield "minfilter", self.minfilter
+        yield "foldlevel", self.foldlevel
+        yield "perfs", self.perfs
+        yield "root", dict(self.root)
