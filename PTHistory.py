@@ -91,6 +91,7 @@ class Node:
         self.name = self.__readName(fp)
         (self.tagindex,) = readBytes("i", fp)
         (self.ishidden,) = readBytes("c", fp)
+        self.ishidden = self.ishidden.decode()
         (self.numberofdays,) = readBytes("i", fp)
 
         for i in range(self.numberofdays):
@@ -160,7 +161,7 @@ class PTHistory:
     def toDict(self):
         return {
             "version": self.version,
-            # "magic": self.magic,
+            "magic": self.magic.decode(),
             "numtags": self.numtags,
             # "tags": self.tags,
             "minfilter": self.minfilter,
