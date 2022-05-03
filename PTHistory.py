@@ -5,7 +5,7 @@ from datetime import date
 def secondsToTimestring(seconds: int):
     mm, ss = divmod(seconds, 60)
     hh, mm = divmod(mm, 60)
-    return "%d:%02d:%02d" % (hh, mm, ss)
+    return f"{hh}:{mm:02}:{ss:02}"
 
 def readBytes(formatstr: str, fp: BinaryIO):
     return unpack(formatstr, fp.read(calcsize(formatstr)))
