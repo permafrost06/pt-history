@@ -1,5 +1,4 @@
 from struct import *
-from math import floor
 from typing import BinaryIO
 from datetime import date
 
